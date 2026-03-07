@@ -4,14 +4,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { GLOBAL_CSS, C, NAV_CONFIG, ROLE_COLORS, ROLE_LABELS } from "./styles/theme";
-import { NOTIFICATIONS } from "./data/db";
+import { useDB } from "./data/db";
 import { Avatar } from "./components/UI";
 
 import LoginPage        from "./pages/LoginPage";
 import DashboardPage    from "./pages/DashboardPage";
 import LiveTrackingPage from "./pages/LiveTrackingPage";
 import {
-  OrdersPage, RoutingPage, DeliveriesPage, DispatchPage,
+  OrdersPage, RoutingPage, DeliveriesPage, WarehousePage,
   InventoryPage, MyDeliveryPage, NavigationPage,
   RetailerOrdersPage, RetailerTrackingPage, RetailerHistoryPage,
   ReportsPage, UsersPage, VehiclesPage, RetailersPage, MessagesPage,
@@ -37,7 +37,7 @@ function PageContent({ pageId, user }) {
     case "orders":      return <OrdersPage      {...p}/>;
     case "routing":     return <RoutingPage     {...p}/>;
     case "deliveries":  return <DeliveriesPage  {...p}/>;
-    case "dispatch":    return <DispatchPage    {...p}/>;
+    case "dispatch":    return <WarehousePage    {...p}/>;
     case "inventory":   return <InventoryPage   {...p}/>;
     case "my_delivery": return <MyDeliveryPage  {...p}/>;
     case "navigation":  return <NavigationPage  {...p}/>;
@@ -140,6 +140,7 @@ function BottomNav({ navItems, page, setPage }) {
 
 // ── Notification Dropdown (desktop) ───────────────
 function NotifDropdown({ onClose }) {
+  const { notifications: NOTIFICATIONS, markAllRead } = useDB();
   const unread = NOTIFICATIONS.filter(n=>!n.read).length;
   return (
     <div style={{position:"absolute",top:52,right:0,width:380,background:"white",borderRadius:16,boxShadow:C.shadowXL,border:`1px solid ${C.border}`,zIndex:300,maxHeight:440,overflowY:"auto"}}>
@@ -167,6 +168,7 @@ function NotifDropdown({ onClose }) {
 
 // ── Notification Sheet (mobile bottom-sheet) ────────
 function NotifSheet({ onClose }) {
+  const { notifications: NOTIFICATIONS, markAllRead } = useDB();
   const unread = NOTIFICATIONS.filter(n=>!n.read).length;
   return (
     <>
@@ -197,7 +199,7 @@ function NotifSheet({ onClose }) {
           ))}
         </div>
         <div className="pb-safe" style={{padding:"12px 18px",borderTop:`1px solid ${C.border}`,flexShrink:0}}>
-          <button onClick={onClose} style={{width:"100%",padding:"12px",background:C.redL,color:C.red,border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer"}}>
+          <button onClick={()=>{markAllRead();onClose();}} style={{width:"100%",padding:"12px",background:C.redL,color:C.red,border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer"}}>
             Mark All as Read
           </button>
         </div>
@@ -209,13 +211,14 @@ function NotifSheet({ onClose }) {
 // ── Main Layout ────────────────────────────────────
 function MainLayout({ user, onLogout }) {
   const { isMobile, isTablet } = useBreakpoint();
+  const { notifications, markAllRead } = useDB();
   const [page,      setPage]   = useState(NAV_CONFIG[user.role]?.[0]?.id || "dashboard");
   const [drawer,    setDrawer] = useState(false);
   const [notif,     setNotif]  = useState(false);
   const [collapsed, setCol]    = useState(false);
 
   const navItems = NAV_CONFIG[user.role] || [];
-  const unread   = NOTIFICATIONS.filter(n=>!n.read).length;
+  const unread   = notifications.filter(n=>!n.read).length;
   const sections = [...new Set(navItems.map(n=>n.section))];
   const secLabel = { main:"Main", ops:"Operations", admin:"Administration", tools:"Tools" };
   const curNav   = navItems.find(n=>n.id===page);

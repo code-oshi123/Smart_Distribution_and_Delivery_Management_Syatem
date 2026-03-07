@@ -7,6 +7,8 @@ import { USERS } from "../data/db";
 import { ROLE_COLORS, ROLE_LABELS, C } from "../styles/theme";
 
 // ── Viewport-height fix for iOS Safari ────────────
+// iOS Safari 100vh includes the browser chrome, so we use
+// window.innerHeight instead and update on resize/orientationchange
 function useViewportHeight() {
   const [vh, setVh] = useState(window.innerHeight);
   useEffect(() => {
@@ -46,7 +48,10 @@ function FloatInput({ label, type="text", value, onChange, onKeyDown, icon, righ
         transition:"border-color .18s, background .18s",
         overflow:"hidden",
       }}>
+        {/* Icon */}
         <span style={{ paddingLeft:16, fontSize:18, opacity:.6, flexShrink:0, userSelect:"none" }}>{icon}</span>
+
+        {/* Input + floating label */}
         <div style={{ flex:1, position:"relative", paddingTop:20, paddingBottom:8, paddingRight:8 }}>
           <label style={{
             position:"absolute", left:0,
@@ -76,7 +81,7 @@ function FloatInput({ label, type="text", value, onChange, onKeyDown, icon, righ
             inputMode={inputMode}
             style={{
               width:"100%", border:"none", outline:"none",
-              fontSize:16,
+              fontSize:16, // prevents iOS zoom
               fontFamily:"'Outfit',system-ui,sans-serif",
               color:C.text, background:"transparent",
               paddingRight:4,
@@ -85,6 +90,8 @@ function FloatInput({ label, type="text", value, onChange, onKeyDown, icon, righ
             }}
           />
         </div>
+
+        {/* Right slot (show/hide password) */}
         {rightSlot && (
           <div style={{ paddingRight:12, flexShrink:0 }}>{rightSlot}</div>
         )}
@@ -96,7 +103,6 @@ function FloatInput({ label, type="text", value, onChange, onKeyDown, icon, righ
 export default function LoginPage({ onLogin }) {
   const isMobile  = useIsMobile();
   const vh        = useViewportHeight();
-
   const [email,     setEmail]     = useState("");
   const [pass,      setPass]      = useState("");
   const [error,     setError]     = useState("");
@@ -104,8 +110,10 @@ export default function LoginPage({ onLogin }) {
   const [showPass,  setShowPass]  = useState(false);
   const [showDemo,  setShowDemo]  = useState(false);
   const [loggingIn, setLoggingIn] = useState(null);
+  // Track if keyboard is likely open (form scrolled up on mobile)
   const [kbOpen,    setKbOpen]    = useState(false);
 
+  // iOS keyboard detection: viewport shrinks when keyboard opens
   useEffect(() => {
     if (!isMobile) return;
     const baseH = window.screen.height;
@@ -137,6 +145,7 @@ export default function LoginPage({ onLogin }) {
   if (isMobile) {
     return (
       <div style={{
+        // Use measured viewport height instead of 100vh
         height: vh,
         fontFamily:"'Outfit',system-ui,sans-serif",
         display:"flex",
@@ -144,9 +153,11 @@ export default function LoginPage({ onLogin }) {
         background: C.navy,
         overflow:"hidden",
         position:"relative",
+        // Safe areas for iPhone notch + home indicator
         paddingTop:  "env(safe-area-inset-top, 0px)",
       }}>
 
+        {/* ── Background decoration ── */}
         <div style={{ position:"absolute", inset:0, pointerEvents:"none", overflow:"hidden", zIndex:0 }}>
           <div style={{ position:"absolute", width:"80vw", height:"80vw", maxWidth:360, maxHeight:360, borderRadius:"50%", background:C.red, top:"-25%", right:"-20%", opacity:.1 }}/>
           <div style={{ position:"absolute", width:"60vw", height:"60vw", maxWidth:280, maxHeight:280, borderRadius:"50%", background:C.red, bottom:"-15%", left:"-20%", opacity:.07 }}/>
@@ -156,6 +167,7 @@ export default function LoginPage({ onLogin }) {
           </svg>
         </div>
 
+        {/* ── Brand header — shrinks when keyboard opens ── */}
         <div style={{
           position:"relative", zIndex:1,
           padding: kbOpen ? "16px 24px 12px" : "clamp(20px,5vh,44px) 24px clamp(16px,3vh,28px)",
@@ -163,6 +175,7 @@ export default function LoginPage({ onLogin }) {
           transition:"padding .3s",
           flexShrink:0,
         }}>
+          {/* Logo */}
           <div style={{ display:"inline-flex", alignItems:"center", gap:10, marginBottom: kbOpen?8:"clamp(10px,2.5vh,20px)" }}>
             <div style={{ background:C.red, borderRadius:10, padding:"8px 16px", fontWeight:900, fontSize:18, color:"white", letterSpacing:2 }}>NESTLÉ</div>
             <div style={{ width:1, height:28, background:"rgba(255,255,255,.2)" }}/>
@@ -177,6 +190,8 @@ export default function LoginPage({ onLogin }) {
               <h1 style={{ color:"white", fontSize:"clamp(22px,6vw,30px)", fontWeight:900, lineHeight:1.2, marginBottom:8 }}>
                 Supply Chain <span style={{ color:C.red }}>Reimagined</span>
               </h1>
+
+              {/* Feature pills */}
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7, maxWidth:340, margin:"14px auto 0" }}>
                 {[
                   { icon:"🗺️", label:"Live Tracking"       },
@@ -194,6 +209,7 @@ export default function LoginPage({ onLogin }) {
           )}
         </div>
 
+        {/* ── White form card — fills remaining height ── */}
         <div style={{
           position:"relative", zIndex:1,
           flex:1,
@@ -202,17 +218,22 @@ export default function LoginPage({ onLogin }) {
           overflowY:"auto",
           WebkitOverflowScrolling:"touch",
           boxShadow:"0 -10px 40px rgba(0,0,0,.25)",
+          // Bottom safe area for iPhone home indicator
           paddingBottom:"env(safe-area-inset-bottom, 16px)",
         }}>
+          {/* Drag handle */}
           <div style={{ display:"flex", justifyContent:"center", paddingTop:10, paddingBottom:4, flexShrink:0 }}>
             <div style={{ width:36, height:4, borderRadius:99, background:"#CBD5E1" }}/>
           </div>
 
           <div style={{ padding:"16px 18px 24px" }}>
+
+            {/* ── Sign-in form card ── */}
             <div style={{ background:"white", borderRadius:20, padding:"22px 18px 20px", boxShadow:C.shadowM, marginBottom:14 }}>
               <h2 style={{ fontSize:20, fontWeight:800, color:C.text, marginBottom:3 }}>Welcome back 👋</h2>
               <p style={{ fontSize:12, color:C.textS, marginBottom:22, lineHeight:1.5 }}>Sign in to your Nestlé DMS account</p>
 
+              {/* Error */}
               {error && (
                 <div style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"11px 14px", background:"#FFF1F2", border:"1px solid #FECDD3", borderRadius:11, marginBottom:18 }}>
                   <span style={{ fontSize:15, flexShrink:0 }}>❌</span>
@@ -221,19 +242,64 @@ export default function LoginPage({ onLogin }) {
                 </div>
               )}
 
-              <FloatInput label="Email Address" type="email" value={email} onChange={setEmail} onKeyDown={handleKey} icon="✉️" autoComplete="email" inputMode="email"/>
+              {/* Email input */}
               <FloatInput
-                label="Password" type={showPass?"text":"password"} value={pass} onChange={setPass} onKeyDown={handleKey} icon="🔒" autoComplete="current-password"
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                onKeyDown={handleKey}
+                icon="✉️"
+                autoComplete="email"
+                inputMode="email"
+              />
+
+              {/* Password input */}
+              <FloatInput
+                label="Password"
+                type={showPass?"text":"password"}
+                value={pass}
+                onChange={setPass}
+                onKeyDown={handleKey}
+                icon="🔒"
+                autoComplete="current-password"
                 rightSlot={
-                  <button onClick={()=>setShowPass(!showPass)} style={{ background:"none",border:"none",cursor:"pointer",fontSize:20,padding:"4px",color:C.textS,lineHeight:1,WebkitTapHighlightColor:"transparent" }}>
+                  <button
+                    onClick={()=>setShowPass(!showPass)}
+                    style={{ background:"none",border:"none",cursor:"pointer",fontSize:20,padding:"4px",color:C.textS,lineHeight:1,WebkitTapHighlightColor:"transparent" }}>
                     {showPass?"🙈":"👁️"}
                   </button>
                 }
               />
 
-              <button onClick={handle} disabled={loading}
-                style={{ width:"100%", padding:"16px", background:loading?"#94A3B8":C.red, color:"white", border:"none", borderRadius:14, fontSize:16, fontWeight:800, cursor:loading?"not-allowed":"pointer", transition:"background .2s, transform .1s", letterSpacing:.3, display:"flex", alignItems:"center", justifyContent:"center", gap:8, minHeight:54, WebkitTapHighlightColor:"transparent", boxShadow:loading?"none":`0 4px 20px ${C.red}45` }}>
-                {loading ? <><span style={{ animation:"spin .7s linear infinite", display:"inline-block", fontSize:20 }}>⟳</span> Signing in…</> : "Sign In →"}
+              {/* Sign in button */}
+              <button
+                onClick={handle}
+                disabled={loading}
+                style={{
+                  width:"100%",
+                  padding:"16px",
+                  background: loading?"#94A3B8":C.red,
+                  color:"white",
+                  border:"none",
+                  borderRadius:14,
+                  fontSize:16,
+                  fontWeight:800,
+                  cursor: loading?"not-allowed":"pointer",
+                  transition:"background .2s, transform .1s",
+                  letterSpacing:.3,
+                  display:"flex",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  gap:8,
+                  minHeight:54,
+                  WebkitTapHighlightColor:"transparent",
+                  boxShadow: loading?"none":`0 4px 20px ${C.red}45`,
+                }}>
+                {loading
+                  ? <><span style={{ animation:"spin .7s linear infinite", display:"inline-block", fontSize:20 }}>⟳</span> Signing in…</>
+                  : "Sign In →"
+                }
               </button>
 
               <p style={{ textAlign:"center", fontSize:10, color:C.textS, marginTop:14, lineHeight:1.6 }}>
@@ -241,9 +307,18 @@ export default function LoginPage({ onLogin }) {
               </p>
             </div>
 
+            {/* ── Demo accounts ── */}
             <div style={{ background:"white", borderRadius:18, boxShadow:C.shadowS, border:`1px solid ${C.border}`, overflow:"hidden", marginBottom:14 }}>
-              <button onClick={()=>setShowDemo(!showDemo)}
-                style={{ background:"none", border:"none", width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 18px", cursor:"pointer", fontFamily:"'Outfit',system-ui,sans-serif", WebkitTapHighlightColor:"transparent", minHeight:56 }}>
+              <button
+                onClick={()=>setShowDemo(!showDemo)}
+                style={{
+                  background:"none", border:"none", width:"100%",
+                  display:"flex", justifyContent:"space-between", alignItems:"center",
+                  padding:"16px 18px", cursor:"pointer",
+                  fontFamily:"'Outfit',system-ui,sans-serif",
+                  WebkitTapHighlightColor:"transparent",
+                  minHeight:56,
+                }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   <span style={{ fontSize:18 }}>🔑</span>
                   <span style={{ fontSize:14, fontWeight:700, color:C.textM }}>Demo Accounts</span>
@@ -258,17 +333,37 @@ export default function LoginPage({ onLogin }) {
               {showDemo && (
                 <div style={{ borderTop:`1px solid ${C.border}`, padding:"10px 14px 14px", display:"flex", flexDirection:"column", gap:8 }}>
                   {USERS.map(u => (
-                    <button key={u.id} onClick={()=>quickLogin(u)} disabled={!!loggingIn}
-                      style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 13px", background:loggingIn===u.id?ROLE_COLORS[u.role]+"22":ROLE_COLORS[u.role]+"0E", border:`1.5px solid ${loggingIn===u.id?ROLE_COLORS[u.role]+"99":ROLE_COLORS[u.role]+"2A"}`, borderRadius:13, cursor:loggingIn?"not-allowed":"pointer", textAlign:"left", fontFamily:"'Outfit',system-ui,sans-serif", transition:"all .15s", WebkitTapHighlightColor:"transparent", minHeight:60 }}>
+                    <button key={u.id}
+                      onClick={()=>quickLogin(u)}
+                      disabled={!!loggingIn}
+                      style={{
+                        display:"flex", alignItems:"center", gap:12,
+                        padding:"12px 13px",
+                        background: loggingIn===u.id ? ROLE_COLORS[u.role]+"22" : ROLE_COLORS[u.role]+"0E",
+                        border:`1.5px solid ${loggingIn===u.id?ROLE_COLORS[u.role]+"99":ROLE_COLORS[u.role]+"2A"}`,
+                        borderRadius:13,
+                        cursor: loggingIn?"not-allowed":"pointer",
+                        textAlign:"left",
+                        fontFamily:"'Outfit',system-ui,sans-serif",
+                        transition:"all .15s",
+                        WebkitTapHighlightColor:"transparent",
+                        minHeight:60,
+                      }}>
+                      {/* Avatar */}
                       <div style={{ width:40, height:40, borderRadius:"50%", background:ROLE_COLORS[u.role], color:"white", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, flexShrink:0 }}>
-                        {loggingIn===u.id ? <span style={{ animation:"spin .6s linear infinite", display:"inline-block" }}>⟳</span> : u.avatar}
+                        {loggingIn===u.id
+                          ? <span style={{ animation:"spin .6s linear infinite", display:"inline-block" }}>⟳</span>
+                          : u.avatar
+                        }
                       </div>
+                      {/* Info */}
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{u.name}</div>
                         <div style={{ fontSize:11, color:ROLE_COLORS[u.role], fontWeight:600, marginTop:2 }}>{ROLE_LABELS[u.role]}</div>
                         <div style={{ fontSize:10, color:C.textS, marginTop:1, fontFamily:"monospace" }}>{u.email}</div>
                       </div>
-                      <span style={{ fontSize:18, color:ROLE_COLORS[u.role], flexShrink:0, opacity:loggingIn===u.id?.3:1 }}>→</span>
+                      {/* Arrow */}
+                      <span style={{ fontSize:18, color:ROLE_COLORS[u.role], flexShrink:0, opacity: loggingIn===u.id?.3:1 }}>→</span>
                     </button>
                   ))}
                 </div>
@@ -296,6 +391,7 @@ export default function LoginPage({ onLogin }) {
   return (
     <div style={{ minHeight:"100vh", display:"flex", fontFamily:"'Outfit',sans-serif", background:C.navy, overflow:"hidden", position:"relative" }}>
 
+      {/* Left brand panel */}
       <div style={{ flex:"0 0 52%", background:`linear-gradient(140deg,${C.navy} 0%,#122848 45%,#1a3a6b 100%)`, display:"flex", flexDirection:"column", justifyContent:"center", padding:"60px 72px", position:"relative", overflow:"hidden" }}>
         {[{w:500,h:500,t:-180,l:-180,op:.06},{w:360,h:360,b:-140,r:-80,op:.06},{w:200,h:200,t:"35%",l:"70%",op:.04}].map((ci,i)=>(
           <div key={i} style={{ position:"absolute",width:ci.w,height:ci.h,borderRadius:"50%",background:C.red,top:ci.t,left:ci.l,bottom:ci.b,right:ci.r,opacity:ci.op,pointerEvents:"none" }}/>
@@ -330,6 +426,7 @@ export default function LoginPage({ onLogin }) {
         </div>
       </div>
 
+      {/* Right form panel */}
       <div style={{ flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:40,background:"#F0F4F8",overflowY:"auto" }}>
         <div style={{ width:"100%",maxWidth:420 }}>
           <div style={{ background:"white",borderRadius:20,padding:"36px 36px 28px",boxShadow:C.shadowXL,marginBottom:16 }}>

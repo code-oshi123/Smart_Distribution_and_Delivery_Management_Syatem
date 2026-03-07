@@ -3,12 +3,13 @@
 // ═══════════════════════════════════════════════════
 
 import { useState } from "react";
-import { DELIVERIES, VEHICLES, KPI_HISTORY, NOTIFICATIONS, GPS_LOGS } from "../data/db";
+import { useDB, KPI_HISTORY } from "../data/db";
 import { C } from "../styles/theme";
 import { Card, KPICard, SectionHeader, Badge, ProgressBar, Table, Btn, Tabs, useIsMobile } from "../components/UI";
 import { SriLankaMap, BarChart, LineChart, DonutChart } from "../components/Charts";
 
 export default function DashboardPage() {
+  const { deliveries: DELIVERIES, vehicles: VEHICLES, notifications: NOTIFICATIONS, gpsLogs: GPS_LOGS } = useDB();
   const isMobile   = useIsMobile();
   const [mapSel,   setMapSel]   = useState(null);
   const [chartTab, setChartTab] = useState("weekly");
