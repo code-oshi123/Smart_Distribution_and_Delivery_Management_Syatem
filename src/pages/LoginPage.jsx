@@ -3,8 +3,20 @@
 // ═══════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
-import { USERS } from "../data/db";
+import { DB } from "../data/db";
 import { ROLE_COLORS, ROLE_LABELS, C } from "../styles/theme";
+
+// Demo accounts shown on login screen (static display only)
+const DEMO_ACCOUNTS = [
+  { id:1, name:"Rajith Fernando",    email:"admin@nestle.lk",      pw:"admin123", role:"management",    avatar:"RF" },
+  { id:2, name:"Samanthi Perera",    email:"scm@nestle.lk",        pw:"scm123",   role:"management",    avatar:"SP" },
+  { id:3, name:"Nuwan Dissanayake",  email:"order@nestle.lk",      pw:"order123", role:"order_team",    avatar:"ND" },
+  { id:4, name:"Chamodi Rupasinghe", email:"route@nestle.lk",      pw:"route123", role:"route_planner", avatar:"CR" },
+  { id:5, name:"Kasun Bandara",      email:"warehouse@nestle.lk",  pw:"wh123",    role:"warehouse",     avatar:"KB" },
+  { id:6, name:"Kumara Silva",       email:"driver1@nestle.lk",    pw:"drv123",   role:"driver",        avatar:"KS" },
+  { id:7, name:"Nimal Jayawardena",  email:"driver2@nestle.lk",    pw:"drv123",   role:"driver",        avatar:"NJ" },
+  { id:8, name:"Cargills Manager",   email:"retailer@cargills.lk", pw:"ret123",   role:"retailer",      avatar:"CM" },
+];
 
 // ── Viewport-height fix for iOS Safari ────────────
 // iOS Safari 100vh includes the browser chrome, so we use
@@ -122,19 +134,27 @@ export default function LoginPage({ onLogin }) {
     return () => window.removeEventListener("resize", check);
   }, [isMobile]);
 
-  const handle = () => {
+  const handle = async () => {
     if (!email || !pass) { setError("Please enter your email and password."); return; }
     setLoading(true); setError("");
-    setTimeout(() => {
-      const user = USERS.find(u => u.email === email && u.pw === pass);
-      if (user) onLogin(user);
-      else { setError("Incorrect credentials. Use a demo account below."); setLoading(false); }
-    }, 700);
+    try {
+      const user = await DB.login(email, pass);
+      onLogin(user);
+    } catch {
+      setError("Incorrect credentials. Use a demo account below.");
+      setLoading(false);
+    }
   };
 
-  const quickLogin = (u) => {
+  const quickLogin = async (u) => {
     setLoggingIn(u.id);
-    setTimeout(() => onLogin(u), 440);
+    try {
+      const user = await DB.login(u.email, u.pw);
+      onLogin(user);
+    } catch {
+      setLoggingIn(null);
+      setError("Quick login failed. Check server connection.");
+    }
   };
 
   const handleKey = (e) => { if (e.key === "Enter") handle(); };
@@ -322,7 +342,7 @@ export default function LoginPage({ onLogin }) {
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                   <span style={{ fontSize:18 }}>🔑</span>
                   <span style={{ fontSize:14, fontWeight:700, color:C.textM }}>Demo Accounts</span>
-                  <span style={{ background:C.redL, color:C.red, borderRadius:20, padding:"1px 8px", fontSize:10, fontWeight:700 }}>{USERS.length}</span>
+                  <span style={{ background:C.redL, color:C.red, borderRadius:20, padding:"1px 8px", fontSize:10, fontWeight:700 }}>{DEMO_ACCOUNTS.length}</span>
                 </div>
                 <div style={{ display:"flex", alignItems:"center", gap:4, color:C.red, fontSize:12, fontWeight:600 }}>
                   {showDemo?"Hide":"Tap to expand"}
@@ -332,7 +352,7 @@ export default function LoginPage({ onLogin }) {
 
               {showDemo && (
                 <div style={{ borderTop:`1px solid ${C.border}`, padding:"10px 14px 14px", display:"flex", flexDirection:"column", gap:8 }}>
-                  {USERS.map(u => (
+                  {DEMO_ACCOUNTS.map(u => (
                     <button key={u.id}
                       onClick={()=>quickLogin(u)}
                       disabled={!!loggingIn}
@@ -469,7 +489,7 @@ export default function LoginPage({ onLogin }) {
             </button>
             {showDemo && (
               <div style={{ marginTop:14,display:"flex",flexDirection:"column",gap:7 }}>
-                {USERS.map(u=>(
+                {DEMO_ACCOUNTS.map(u=>(
                   <button key={u.id} onClick={()=>quickLogin(u)} disabled={!!loggingIn}
                     style={{ display:"flex",alignItems:"center",gap:12,padding:"9px 12px",background:loggingIn===u.id?ROLE_COLORS[u.role]+"22":ROLE_COLORS[u.role]+"0D",border:`1px solid ${loggingIn===u.id?ROLE_COLORS[u.role]+"66":ROLE_COLORS[u.role]+"28"}`,borderRadius:10,cursor:loggingIn?"not-allowed":"pointer",textAlign:"left",transition:"all .15s",fontFamily:"'Outfit',sans-serif" }}>
                     <div style={{ width:32,height:32,borderRadius:"50%",background:ROLE_COLORS[u.role],color:"white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,flexShrink:0 }}>
