@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nestlé DMS — Sprint 1 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#C8102E;--red-d:#a00d25;
+  --navy:#0B1E3D;--navy-l:#1a3260;
+  --bg:#f4f5f7;--bg2:#e8eaed;--bg3:#9aa0ab;
+  --white:#fff;--text:#1a1d23;
+  --green:#16a34a;--orange:#ea580c;--blue:#2563eb;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --r:12px;--r-sm:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-l) 100%)}
+.lcard{background:#fff;border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.llogo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.llogo-box{width:44px;height:44px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:20px}
+.lbrand{font-size:20px;font-weight:700;color:var(--navy)}
+.lbrand span{display:block;font-size:11px;color:var(--bg3);text-transform:uppercase;letter-spacing:.6px;font-weight:500}
+.lh{font-size:24px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.ls{font-size:13px;color:var(--bg3);margin-bottom:24px}
+.fi{margin-bottom:14px}
+.fi label{display:block;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.fi input,.fi select{width:100%;padding:11px 14px;border:1.5px solid var(--bg2);border-radius:var(--r-sm);font-family:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
+.fi input:focus,.fi select:focus{border-color:var(--red)}
+.lbtn{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.lbtn:hover{background:var(--red-d)}
+.lerr{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.quick{margin-top:22px;padding-top:18px;border-top:1px solid var(--bg2)}
+.qlbl{font-size:11px;font-weight:600;color:var(--bg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qbtn{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border:none;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;font-size:12px;color:var(--text);transition:background .15s;text-align:left}
+.qbtn:hover{background:var(--bg2)}
+.qav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.qname{font-weight:600;font-size:12px}
+.qrole{font-size:10px;color:var(--bg3)}
+
+/* APP */
+#app{display:none;min-height:100vh}
+.topbar{background:var(--navy);height:58px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.tl{display:flex;align-items:center;gap:12px}
+.tlogo{width:32px;height:32px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px}
+.ttitle{font-size:15px;font-weight:700;color:#fff}
+.tsub{font-size:10px;color:rgba(255,255,255,.45)}
+.tr{display:flex;align-items:center;gap:12px}
+.tav{width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.tname{font-size:13px;font-weight:600;color:#fff}
+.trole{font-size:10px;color:rgba(255,255,255,.45)}
+.tout{padding:6px 14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:7px;color:#fff;font-family:inherit;font-size:12px;cursor:pointer}
+.tout:hover{background:rgba(255,255,255,.2)}
+
+/* ROLE BADGE in topbar */
+.role-pill{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* TABS */
+.tabs{background:#fff;border-bottom:1px solid var(--bg2);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:13px 18px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--bg3);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.4px}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--red);border-bottom-color:var(--red)}
+
+/* MAIN */
+.main{padding:24px;max-width:1160px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sec-title{font-size:20px;font-weight:700;color:var(--navy)}
+.sec-sub{font-size:13px;color:var(--bg3);margin-top:2px}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:#fff;border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);border-left:4px solid var(--red)}
+.kpi-v{font-size:26px;font-weight:700;color:var(--navy)}
+.kpi-l{font-size:12px;color:var(--bg3);margin-top:3px}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:var(--r-sm);border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-d)}
+.btn-green{background:var(--green);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--bg2)}.btn-ghost:hover{border-color:var(--navy)}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 14px;font-size:11px;font-weight:600;color:var(--bg3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bg2)}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--bg2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.mono{font-family:'DM Mono',monospace;font-size:12px;font-weight:500}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;white-space:nowrap}
+.b-gray{background:var(--bg2);color:var(--bg3)}
+.b-blue{background:#dbeafe;color:#2563eb}
+.b-green{background:#dcfce7;color:#16a34a}
+.b-orange{background:#ffedd5;color:#ea580c}
+.b-red{background:#fee2e2;color:#dc2626}
+.b-purple{background:#ede9fe;color:#7c3aed}
+.b-navy{background:#e0e7ff;color:#3730a3}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:14px}
+.fg.full{grid-column:1/-1}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--navy);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:1.5px solid var(--bg2);border-radius:var(--r-sm);font-family:inherit;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red)}
+.fg input:disabled{background:var(--bg);color:var(--bg3)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:13px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* EMPTY */
+.empty{text-align:center;padding:44px 24px;color:var(--bg3)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+
+/* MAP */
+.map-wrap{background:linear-gradient(160deg,#e8f4fd 0%,#d4ecf7 100%);border-radius:var(--r);overflow:hidden;border:1px solid var(--bg2);padding:16px}
+
+/* STATUS TIMELINE */
+.timeline{list-style:none}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bg2)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.tl-body{flex:1;font-size:13px}
+.tl-time{font-size:11px;color:var(--bg3);font-family:'DM Mono',monospace}
+
+@media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:14px}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="llogo-box">N</div>
+      <div class="lbrand">Nestlé DMS <span>Sprint 1 v2 · Sri Lanka</span></div>
+    </div>
+    <div class="lh">Sign in</div>
+    <div class="ls">Access your role-based workspace</div>
+    <div class="lerr" id="lerr">Incorrect email or password.</div>
+    <div class="fi"><label>Email</label><input id="lemail" type="email" placeholder="you@nestle.lk"/></div>
+    <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
+    <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="quick">
+      <div class="qlbl">Quick demo access</div>
+      <div class="qbtns">
+        <button class="qbtn" onclick="quick('retailer1@cargills.lk','ret123')"><div class="qav" style="background:#C8102E">CM</div><div><div class="qname">Cargills Manager</div><div class="qrole">Retailer</div></div></button>
+        <button class="qbtn" onclick="quick('order@nestle.lk','order123')"><div class="qav" style="background:#2563eb">ND</div><div><div class="qname">Nuwan Dissanayake</div><div class="qrole">Order Team</div></div></button>
+        <button class="qbtn" onclick="quick('route@nestle.lk','route123')"><div class="qav" style="background:#16a34a">CR</div><div><div class="qname">Chamodi Rupasinghe</div><div class="qrole">Route Planner</div></div></button>
+        <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#7c3aed">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
+        <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#ea580c">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <div class="topbar">
+    <div class="tl">
+      <div class="tlogo">N</div>
+      <div><div class="ttitle">Nestlé DMS <span id="t-version" style="font-size:11px;opacity:.5">Sprint 1 v2</span></div><div class="tsub">Sri Lanka Distribution</div></div>
+    </div>
+    <div class="tr">
+      <div class="tav" id="tav">?</div>
+      <div><div class="tname" id="tname">—</div><div class="trole" id="trole">—</div></div>
+      <button class="tout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="nav-tabs"></div>
+
+  <div class="main" id="main-content"></div>
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- New Order (Retailer) -->
+<div class="modal-bg" id="m-order">
+  <div class="modal">
+    <div class="modal-title">📦 Request Delivery Order</div>
+    <div class="form-grid">
+      <div class="fg"><label>Retailer Name</label><input id="o-ret" disabled/></div>
+      <div class="fg"><label>City *</label>
+        <select id="o-city">
+          <option value="">Select city…</option>
+          <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
+          <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
+          <option>Peradeniya</option><option>Galle</option><option>Matara</option>
+          <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+        </select>
+      </div>
+      <div class="fg"><label>Items *</label><input id="o-items" type="number" min="1" placeholder="e.g. 24"/></div>
+      <div class="fg"><label>Weight (kg) *</label><input id="o-kg" type="number" min="1" placeholder="e.g. 240"/></div>
+      <div class="fg"><label>Priority</label>
+        <select id="o-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+      </div>
+      <div class="fg"><label>Notes</label><input id="o-notes" placeholder="Special instructions…"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('m-order')">Cancel</button>
+      <button class="btn btn-red"   onclick="submitOrder()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm/Reject (OPT) -->
+<div class="modal-bg" id="m-confirm">
+  <div class="modal">
+    <div class="modal-title" id="mc-title">Review Order</div>
+    <input type="hidden" id="mc-id"/>
+    <div class="fg"><label>Order</label><input id="mc-label" disabled/></div>
+    <div class="fg"><label>Rejection reason (if rejecting)</label><input id="mc-reason" placeholder="e.g. Out of stock in region"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost"  onclick="closeModal('m-confirm')">Cancel</button>
+      <button class="btn btn-red"    onclick="confirmOrder('reject')">Reject</button>
+      <button class="btn btn-green"  onclick="confirmOrder('confirm')">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Assign driver/vehicle (Route Planner) -->
+<div class="modal-bg" id="m-assign">
+  <div class="modal">
+    <div class="modal-title">🚚 Assign Driver &amp; Vehicle</div>
+    <input type="hidden" id="a-id"/>
+    <input type="hidden" id="a-city"/>
+    <div class="fg"><label>Delivery</label><input id="a-label" disabled/></div>
+    <div class="fg"><label>Driver *</label><select id="a-driver"><option value="">Loading…</option></select></div>
+    <div class="fg"><label>Vehicle *</label><select id="a-vehicle"><option value="">Loading…</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('m-assign')">Cancel</button>
+      <button class="btn btn-blue"  onclick="saveAssign()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- Update Delivery Status (Distributor) -->
+<div class="modal-bg" id="m-status">
+  <div class="modal">
+    <div class="modal-title">📋 Update Delivery Status</div>
+    <input type="hidden" id="s-id"/>
+    <div class="fg"><label>Delivery</label><input id="s-label" disabled/></div>
+    <div class="fg"><label>New Status *</label>
+      <select id="s-status">
+        <option value="in-transit">In Transit</option>
+        <option value="delivered">Delivered ✓</option>
+        <option value="failed">Failed ✗</option>
+      </select>
+    </div>
+    <div class="fg"><label>Note</label><input id="s-note" placeholder="e.g. Customer unavailable"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost"  onclick="closeModal('m-status')">Cancel</button>
+      <button class="btn btn-blue"   onclick="saveStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-msg">Saved</span></div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const API = 'http://localhost:5001/api';
+let user = null;
+let drivers = [], vehicles = [];
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('lemail').value.trim();
+  const pass  = document.getElementById('lpass').value;
+  if (!email || !pass) { showErr('Enter email and password.'); return; }
+  document.getElementById('lbtn').textContent = 'Signing in…';
+  document.getElementById('lbtn').disabled = true;
+  try {
+    const r = await fetch(`${API}/login`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
+    if (!r.ok) { showErr('Incorrect email or password.'); reset(); return; }
+    user = await r.json();
+    enterApp();
+  } catch { showErr('Cannot connect — is server.js running?'); reset(); }
+}
+
+function quick(e,p){ document.getElementById('lemail').value=e; document.getElementById('lpass').value=p; doLogin(); }
+function showErr(m){ const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
+function reset(){ document.getElementById('lbtn').textContent='Sign In'; document.getElementById('lbtn').disabled=false; }
+
+document.getElementById('lpass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogout(){
+  user=null;
+  document.getElementById('login').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('lerr').style.display='none';
+  document.getElementById('lemail').value='';
+  document.getElementById('lpass').value='';
+}
+
+// ═══════════════════════════════════════
+// APP ENTRY
+// ═══════════════════════════════════════
+function enterApp() {
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tav').textContent   = user.avatar;
+  document.getElementById('tname').textContent = user.name;
+  document.getElementById('trole').textContent = roleLabel(user.role);
+  document.getElementById('lerr').style.display='none';
+  reset();
+  buildNav();
+  loadRefData();
+}
+
+function roleLabel(r){
+  return { retailer:'Retailer', order_team:'Order Processing Team',
+           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor' }[r] || r;
+}
+function roleColor(r){
+  return { retailer:'#C8102E', order_team:'#2563eb', route_planner:'#16a34a',
+           warehouse:'#7c3aed', distributor:'#ea580c' }[r] || '#6b7280';
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION — role-based tabs
+// ═══════════════════════════════════════
+const ROLE_PAGES = {
+  retailer:      [{ id:'my-orders',   icon:'📦', label:'My Orders'         },
+                  { id:'req-order',   icon:'➕', label:'Request Order'      }],
+  order_team:    [{ id:'all-orders',  icon:'📋', label:'Pending Orders'     },
+                  { id:'deliveries',  icon:'🚚', label:'Deliveries'         },
+                  { id:'consolidate', icon:'📊', label:'Consolidate'        }],
+  route_planner: [{ id:'assign',      icon:'🗺️', label:'Plan Routes'        },
+                  { id:'routes',      icon:'💾', label:'Saved Routes'       }],
+  warehouse:     [{ id:'wh-del',      icon:'📦', label:'Incoming Deliveries'},
+                  { id:'wh-prepare',  icon:'🏭', label:'Prepare Cargo'      }],
+  distributor:   [{ id:'dist-routes', icon:'🛣️', label:'My Routes'          },
+                  { id:'dist-status', icon:'✅', label:'Update Status'      }],
+};
+
+function buildNav() {
+  const pages = ROLE_PAGES[user.role] || [];
+  const tabs  = document.getElementById('nav-tabs');
+  tabs.innerHTML = pages.map((p,i)=>
+    `<button class="tab ${i===0?'active':''}" id="tab-${p.id}" onclick="nav('${p.id}')">${p.icon} ${p.label}</button>`
+  ).join('');
+  if (pages.length) renderPage(pages[0].id);
+}
+
+function nav(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const el = document.getElementById('tab-'+id);
+  if (el) el.classList.add('active');
+  renderPage(id);
+}
+
+// ═══════════════════════════════════════
+// PAGE RENDERER
+// ═══════════════════════════════════════
+async function renderPage(id) {
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>';
+
+  if (id === 'my-orders')   await renderMyOrders();
+  if (id === 'req-order')   renderRequestOrder();
+  if (id === 'all-orders')  await renderAllOrders();
+  if (id === 'deliveries')  await renderDeliveries('order_team');
+  if (id === 'consolidate') renderConsolidate();
+  if (id === 'assign')      await renderAssignPage();
+  if (id === 'routes')      await renderRoutes();
+  if (id === 'wh-del')      await renderWhDeliveries();
+  if (id === 'wh-prepare')  await renderWhPrepare();
+  if (id === 'dist-routes') await renderDistRoutes();
+  if (id === 'dist-status') await renderDistStatus();
+}
+
+// ─── RETAILER: MY ORDERS ───────────────────────────────
+async function renderMyOrders() {
+  const data = await apiFetch(`/orders?role=retailer&userId=${user.id}`);
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">My Orders</div><div class="sec-sub">Orders you have submitted</div></div>
+    </div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Note</th><th>Submitted</th></tr></thead>
+      <tbody>${data.length ? data.map(o=>`
+        <tr>
+          <td><span class="mono">${o.id}</span></td>
+          <td>${o.city}</td><td>${o.items} items · ${o.kg}kg</td>
+          <td>${prioBadge(o.prio)}</td>
+          <td>${orderStatusBadge(o.status)}</td>
+          <td style="font-size:12px;color:var(--bg3)">${o.status==='rejected'&&o.rejectReason ? o.rejectReason : '—'}</td>
+          <td style="font-size:12px;color:var(--bg3)">${o.created}</td>
+        </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+// ─── RETAILER: REQUEST ORDER ───────────────────────────
+function renderRequestOrder() {
+  document.getElementById('o-ret').value = user.name;
+  document.getElementById('o-city').value = '';
+  document.getElementById('o-items').value = '';
+  document.getElementById('o-kg').value = '';
+  document.getElementById('o-prio').value = 'normal';
+  document.getElementById('o-notes').value = '';
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Request Delivery Order</div><div class="sec-sub">Submit a new order request to the Order Processing Team</div></div></div>
+    <div class="card" style="max-width:600px">
+      <div class="form-grid">
+        <div class="fg"><label>Your Name</label><input value="${user.name}" disabled/></div>
+        <div class="fg"><label>City *</label>
+          <select id="i-city"><option value="">Select city…</option>
+            <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
+            <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
+            <option>Peradeniya</option><option>Galle</option><option>Matara</option>
+            <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+          </select>
+        </div>
+        <div class="fg"><label>Items *</label><input id="i-items" type="number" min="1" placeholder="e.g. 24"/></div>
+        <div class="fg"><label>Weight (kg) *</label><input id="i-kg" type="number" min="1" placeholder="e.g. 240"/></div>
+        <div class="fg"><label>Priority</label>
+          <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+        </div>
+        <div class="fg"><label>Notes</label><input id="i-notes" placeholder="Special instructions…"/></div>
+      </div>
+      <button class="btn btn-red" onclick="submitInlineOrder()" style="margin-top:8px">Submit Request</button>
+    </div>`);
+}
+
+async function submitInlineOrder() {
+  const city  = document.getElementById('i-city').value;
+  const items = document.getElementById('i-items').value;
+  const kg    = document.getElementById('i-kg').value;
+  const prio  = document.getElementById('i-prio').value;
+  const notes = document.getElementById('i-notes').value;
+  if (!city||!items||!kg) { toast('⚠️ Fill in all required fields','#ea580c'); return; }
+  const r = await apiFetch('/orders','POST',{
+    retailerId:user.id, retailerName:user.name, city, items:+items, kg:+kg, priority:prio, notes
+  });
+  if (r.id) { toast(`✅ Order ${r.id} submitted — waiting for OPT confirmation`); nav('my-orders'); }
+}
+
+// ─── ORDER TEAM: ALL ORDERS ────────────────────────────
+async function renderAllOrders() {
+  const data = await apiFetch('/orders');
+  const pending = data.filter(o=>o.status==='pending');
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">Pending Order Requests</div><div class="sec-sub">Confirm or reject retailer orders</div></div>
+    </div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
+      <tbody>${data.length ? data.map(o=>`
+        <tr>
+          <td><span class="mono">${o.id}</span></td>
+          <td><strong>${o.retailer}</strong></td>
+          <td>${o.city}</td><td>${o.items} · ${o.kg}kg</td>
+          <td>${prioBadge(o.prio)}</td>
+          <td>${orderStatusBadge(o.status)}</td>
+          <td style="font-size:12px;color:var(--bg3)">${o.created}</td>
+          <td>${o.status==='pending'
+            ? `<button class="btn btn-blue btn-sm" onclick="openConfirmModal('${o.id}','${o.retailer}','${o.city}')">Review</button>`
+            : `<span style="font-size:12px;color:var(--bg3)">${o.confirmedBy||'—'}</span>`
+          }</td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No orders received yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+function openConfirmModal(id, retailer, city) {
+  document.getElementById('mc-id').value = id;
+  document.getElementById('mc-label').value = `${id} — ${retailer}, ${city}`;
+  document.getElementById('mc-reason').value = '';
+  openModal('m-confirm');
+}
+
+async function confirmOrder(action) {
+  const id     = document.getElementById('mc-id').value;
+  const reason = document.getElementById('mc-reason').value;
+  await apiFetch(`/orders/${id}/confirm`,'PUT',{ action, confirmedBy:user.id, rejectReason:reason||null });
+  closeModal('m-confirm');
+  toast(action==='confirm' ? `✅ Order ${id} confirmed` : `❌ Order ${id} rejected`);
+  renderAllOrders();
+}
+
+// ─── ORDER TEAM: DELIVERIES ────────────────────────────
+async function renderDeliveries() {
+  const data = await apiFetch('/deliveries');
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Deliveries</div><div class="sec-sub">All deliveries in the system</div></div></div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th></tr></thead>
+      <tbody>${data.length ? data.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td>
+          <td>${d.city}</td><td>${d.items} · ${d.kg}kg</td>
+          <td>${prioBadge(d.prio)}</td>
+          <td>${delStatusBadge(d.status)}</td>
+          <td>${d.driverName ? `<span class="badge b-navy">${d.driverName}</span>` : '<span style="color:var(--bg3);font-size:12px">Unassigned</span>'}</td>
+          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet. Consolidate confirmed orders first.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+// ─── ORDER TEAM: CONSOLIDATE ───────────────────────────
+function renderConsolidate() {
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Consolidate Orders</div><div class="sec-sub">Convert all confirmed orders into delivery records for the route planner</div></div></div>
+    <div class="card" style="max-width:560px">
+      <p style="font-size:14px;line-height:1.7;color:var(--bg3);margin-bottom:20px">
+        This action gathers all <strong style="color:var(--navy)">confirmed</strong> orders, creates a delivery record for each one, and marks them as consolidated. The route planner will then assign drivers and vehicles.
+      </p>
+      <button class="btn btn-blue" onclick="doConsolidate()">📊 Consolidate All Confirmed Orders</button>
+    </div>`);
+}
+
+async function doConsolidate() {
+  const r = await apiFetch('/deliveries/consolidate','POST',{});
+  if (r.created === 0) toast('⚠️ No confirmed orders to consolidate','#ea580c');
+  else toast(`✅ ${r.created} deliveries created and sent to route planner`);
+}
+
+// ─── ROUTE PLANNER: ASSIGN ─────────────────────────────
+async function renderAssignPage() {
+  const data = await apiFetch('/deliveries');
+  const unassigned = data.filter(d=>d.status==='pending');
+  const assigned   = data.filter(d=>d.status!=='pending');
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Plan Routes &amp; Assign</div><div class="sec-sub">Assign drivers and vehicles to pending deliveries</div></div>
+    <button class="btn btn-red" onclick="optimiseAll()">⚡ Optimise &amp; Save Routes</button></div>
+    <div class="card">
+      <div class="card-title">⏳ Pending Assignment (${unassigned.length})</div>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Priority</th><th>Weight</th><th>Action</th></tr></thead>
+        <tbody>${unassigned.length ? unassigned.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td>${prioBadge(d.prio)}</td><td>${d.kg}kg</td>
+            <td><button class="btn btn-blue btn-sm" onclick="openAssignModal('${d.id}','${d.retailer}','${d.city}')">Assign</button></td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>No pending deliveries.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">✅ Assigned (${assigned.length})</div>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>ETA</th></tr></thead>
+        <tbody>${assigned.length ? assigned.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td>${d.retailer}</td><td>${d.city}</td>
+            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
+            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+            <td>${delStatusBadge(d.status)}</td>
+            <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>None assigned yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>`);
+}
+
+function openAssignModal(id, retailer, city) {
+  document.getElementById('a-id').value    = id;
+  document.getElementById('a-city').value  = city;
+  document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
+  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
+  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
+  openModal('m-assign');
+}
+
+async function saveAssign() {
+  const id  = document.getElementById('a-id').value;
+  const drv = document.getElementById('a-driver').value;
+  const veh = document.getElementById('a-vehicle').value;
+  if (!drv||!veh) { toast('⚠️ Select both driver and vehicle','#ea580c'); return; }
+  const [driverId,driverName] = drv.split('|');
+  const [vehicleId]           = veh.split('|');
+  const r = await apiFetch(`/deliveries/${id}/assign`,'PUT',{ driverId, driverName, vehicleId });
+  closeModal('m-assign');
+  toast(`✅ Assigned ${driverName} — ETA ${r.eta}`);
+  renderAssignPage();
+}
+
+async function optimiseAll() {
+  const data = await apiFetch('/deliveries');
+  const assigned = data.filter(d=>d.driverId);
+  if (!assigned.length) { toast('⚠️ No assigned deliveries to save','#ea580c'); return; }
+  const byDriver = {};
+  assigned.forEach(d=>{ if (!byDriver[d.driverName]) byDriver[d.driverName]={...d,stops:[]}; byDriver[d.driverName].stops.push(d); });
+  for (const [dname,info] of Object.entries(byDriver)) {
+    const cities = info.stops.map(s=>s.city);
+    const distKm = cities.length * 42;
+    const durMins = distKm * 2.8;
+    await apiFetch('/routes','POST',{ driverId:info.driverId, driverName:dname, vehicleId:info.vehicleId, stops:info.stops.length, distKm:Math.round(distKm), durMins:Math.round(durMins), cities });
+  }
+  toast(`✅ Routes saved for ${Object.keys(byDriver).length} driver(s)`);
+  nav('routes');
+}
+
+// ─── ROUTE PLANNER: SAVED ROUTES ──────────────────────
+async function renderRoutes() {
+  const data = await apiFetch('/routes');
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Saved Routes</div><div class="sec-sub">Optimised routes stored in SQL Server</div></div></div>
+    <div class="card">
+      ${data.length ? data.map(r=>{
+        const cities = r.cities ? JSON.parse(r.cities) : [];
+        return `<div style="padding:16px 0;border-bottom:1px solid var(--bg2)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span class="mono" style="color:var(--red)">${r.id}</span>
+            <strong>${r.name}</strong>
+            <span class="badge b-blue">${r.driverName||'—'}</span>
+            <span class="badge b-gray">${r.vehicleId||'—'}</span>
+            <span class="badge b-navy" style="margin-left:auto">${r.distKm} km · ${Math.floor(r.durMins/60)}h ${r.durMins%60}m</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--bg3)">🏭 Depot →</span>
+            ${cities.map((c,i)=>`<span class="badge b-gray">${i+1}. ${c}</span>`).join(' → ')}
+          </div>
+        </div>`;
+      }).join('') : '<div class="empty"><div class="empty-icon">💾</div><div>No routes saved yet. Assign deliveries first.</div></div>'}</div>`);
+}
+
+// ─── WAREHOUSE: INCOMING DELIVERIES ───────────────────
+async function renderWhDeliveries() {
+  const data = await apiFetch('/deliveries');
+  const incoming = data.filter(d=>d.status==='assigned');
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Incoming Deliveries</div><div class="sec-sub">Deliveries assigned by route planner — review and acknowledge</div></div></div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${incoming.length ? incoming.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td>${d.items} items · ${d.kg}kg</td>
+          <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
+          <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+          <td>${delStatusBadge(d.status)}</td>
+          <td><button class="btn btn-green btn-sm" onclick="markWhReady('${d.id}')">Mark Ready</button></td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No incoming deliveries yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+async function markWhReady(id) {
+  await apiFetch(`/deliveries/${id}/warehouse-ready`,'PUT',{});
+  toast(`✅ Delivery ${id} marked as warehouse ready — distributor notified`);
+  renderWhDeliveries();
+}
+
+// ─── WAREHOUSE: PREPARE CARGO ─────────────────────────
+async function renderWhPrepare() {
+  const data = await apiFetch('/deliveries');
+  const ready = data.filter(d=>['warehouse_ready','in-transit','delivered','failed'].includes(d.status));
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Cargo Preparation</div><div class="sec-sub">All dispatched deliveries and their current status</div></div></div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Status</th><th>ETA</th></tr></thead>
+      <tbody>${ready.length ? ready.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td>${d.items} · ${d.kg}kg</td>
+          <td>${d.driverName||'—'}</td>
+          <td>${delStatusBadge(d.status)}</td>
+          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No dispatched cargo yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+// ─── DISTRIBUTOR: MY ROUTES ───────────────────────────
+async function renderDistRoutes() {
+  const data = await apiFetch(`/deliveries?role=distributor&userId=${user.id}`);
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">My Delivery Routes</div><div class="sec-sub">Your assigned deliveries for today</div></div></div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-v">${data.length}</div><div class="kpi-l">Total Stops</div></div>
+      <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-v">${data.filter(d=>d.status==='delivered').length}</div><div class="kpi-l">Delivered</div></div>
+      <div class="kpi" style="border-left-color:var(--orange)"><div class="kpi-v">${data.filter(d=>d.status==='in-transit').length}</div><div class="kpi-l">In Transit</div></div>
+      <div class="kpi" style="border-left-color:var(--bg3)"><div class="kpi-v">${data.filter(d=>d.status==='warehouse_ready').length}</div><div class="kpi-l">Awaiting Pickup</div></div>
+    </div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>#</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
+      <tbody>${data.length ? data.map((d,i)=>`
+        <tr>
+          <td><span class="mono" style="color:var(--red)">${i+1}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td>${d.items} · ${d.kg}kg</td>
+          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td>${delStatusBadge(d.status)}</td>
+        </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">🛣️</div><div>No deliveries assigned to you yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
+}
+
+// ─── DISTRIBUTOR: UPDATE STATUS ────────────────────────
+async function renderDistStatus() {
+  const data = await apiFetch(`/deliveries?role=distributor&userId=${user.id}`);
+  const active = data.filter(d=>!['delivered','failed'].includes(d.status));
+  setContent(`
+    <div class="sec-hdr"><div><div class="sec-title">Update Delivery Status</div><div class="sec-sub">Update status for your assigned deliveries — visible to all roles</div></div></div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>ETA</th><th>Current Status</th><th>Action</th></tr></thead>
+      <tbody>${active.length ? active.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td>${delStatusBadge(d.status)}</td>
+          <td><button class="btn btn-orange btn-sm" onclick="openStatusModal('${d.id}','${d.retailer}','${d.city}')">Update</button></td>
+        </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">✅</div><div>All your deliveries are complete!</div></div></td></tr>'}</tbody>
+    </table></div></div>
+    <div class="card">
+      <div class="card-title">📋 Completed</div>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Final Status</th></tr></thead>
+        <tbody>${data.filter(d=>['delivered','failed'].includes(d.status)).map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td>${d.retailer}</td><td>${d.city}</td>
+            <td>${delStatusBadge(d.status)}</td>
+          </tr>`).join('') || '<tr><td colspan="4"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>`);
+}
+
+function openStatusModal(id, retailer, city) {
+  document.getElementById('s-id').value    = id;
+  document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
+  document.getElementById('s-note').value  = '';
+  document.getElementById('s-status').value = 'in-transit';
+  openModal('m-status');
+}
+
+async function saveStatus() {
+  const id        = document.getElementById('s-id').value;
+  const newStatus = document.getElementById('s-status').value;
+  const note      = document.getElementById('s-note').value;
+  await apiFetch(`/deliveries/${id}/status`,'PUT',{ newStatus, note, updatedBy:user.id });
+  closeModal('m-status');
+  toast(`✅ Status updated to "${newStatus}" — visible to all users`);
+  renderDistStatus();
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+async function apiFetch(path, method='GET', body=null) {
+  try {
+    const opts = { method, headers:{'Content-Type':'application/json'} };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API+path, opts);
+    return await r.json();
+  } catch(e) { toast('❌ Server error: '+e.message,'#dc2626'); return []; }
+}
+
+async function loadRefData() {
+  [drivers, vehicles] = await Promise.all([
+    apiFetch('/drivers'),
+    apiFetch('/vehicles'),
+  ]);
+}
+
+function setContent(html) { document.getElementById('main-content').innerHTML = html; }
+function openModal(id)    { document.getElementById(id).classList.add('open'); }
+function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg, bg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.background = bg || 'var(--navy)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+function prioBadge(p) {
+  return `<span class="badge ${p==='urgent'?'b-red':p==='high'?'b-orange':'b-gray'}">${p}</span>`;
+}
+function orderStatusBadge(s) {
+  const m = { pending:'b-gray', confirmed:'b-green', rejected:'b-red', consolidated:'b-blue' };
+  return `<span class="badge ${m[s]||'b-gray'}">${s}</span>`;
+}
+function delStatusBadge(s) {
+  const m = { pending:'b-gray', assigned:'b-blue', warehouse_ready:'b-purple',
+              'in-transit':'b-orange', delivered:'b-green', failed:'b-red' };
+  return `<span class="badge ${m[s]||'b-gray'}">${(s||'').replace('_',' ')}</span>`;
+}
+</script>
+</body>
+</html>
