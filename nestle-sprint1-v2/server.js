@@ -13,11 +13,28 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ── DB config ─────────────────────────────────────────────
+// const DB = {
+//   server:   'ISHEY-LAPTOP2', port: 1433, database: 'NestleSprint1',
+//   user: 'sa', password: 'Nestle123!',
+//   options: { encrypt: false, trustServerCertificate: true, enableArithAbort: true },
+//   pool:    { max: 10, min: 0, idleTimeoutMillis: 30000 },
+// };
 const DB = {
-  server:   'ISHEY-LAPTOP2', port: 1433, database: 'NestleSprint1',
-  user: 'sa', password: 'Nestle123!',
-  options: { encrypt: false, trustServerCertificate: true, enableArithAbort: true },
-  pool:    { max: 10, min: 0, idleTimeoutMillis: 30000 },
+  server: 'nestleappgroup.database.windows.net', // 
+  port: 1433,
+  database: 'free-sql-db-1824098', // ✅ your actual DB
+  user: 'admin_1', // ✅ your username
+  password: 'Ushani_123', // ⚠️ your password
+  options: {
+    encrypt: true, // ✅ required for Azure
+    trustServerCertificate: true, // ✅ avoids SSL error
+    enableArithAbort: true
+  },
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000
+  },
 };
 let pool;
 async function getPool() {
