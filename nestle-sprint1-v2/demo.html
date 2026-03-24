@@ -595,7 +595,8 @@ function pageConsolidate(){
     <div class="sec-hdr"><div><div class="sec-title">Consolidate Orders</div><div class="sec-sub">Convert confirmed orders into delivery records — Route Planner &amp; Warehouse notified</div></div></div>
     <div class="card" style="max-width:560px">
       <p style="font-size:14px;line-height:1.8;color:var(--bg3);margin-bottom:20px">
-        This action takes all <strong style="color:var(--navy)">confirmed</strong> orders, creates a delivery record for each one, and marks them as consolidated.<br><br>
+        This action takes all <strong style="color:var(--navy)">confirmed</strong> orders and creates a delivery record for each one.<br><br>
+        <strong style="color:var(--navy)">Priority rule:</strong> If only <strong>1</strong> confirmed order exists, it is processed immediately only when its priority is <strong style="color:var(--red)">urgent</strong> or <strong style="color:var(--orange)">high</strong>. A single <strong>normal</strong> or <strong>low</strong> priority order is held — OPT is notified to wait until more orders are confirmed before consolidating.<br><br>
         🔔 <strong style="color:var(--navy)">Route Planner</strong> is notified to assign drivers and vehicles.<br>
         🔔 <strong style="color:var(--navy)">Warehouse</strong> is notified to prepare for incoming cargo.
       </p>
@@ -607,8 +608,16 @@ function pageConsolidate(){
 
 async function doConsolidate(){
   const r = await api('/deliveries/consolidate','POST',{});
-  if (r.created===0) toast('⚠️ No confirmed orders to consolidate','#ea580c');
-  else { toast(`✅ ${r.created} deliveries created — Route Planner + Warehouse notified 🔔`); pollBadge(); }
+  if (r.created===0 && r.held===0) {
+    toast('⚠️ No confirmed orders to consolidate','#ea580c');
+  } else if (r.held===1 && r.reason==='single_low_priority') {
+    toast(`⏳ Order ${r.orderId} held — low/normal priority. Wait for more orders or upgrade priority.`,'#ea580c');
+    pollBadge();
+  } else {
+    toast(`✅ ${r.created} deliver${r.created===1?'y':'ies'} created — Route Planner + Warehouse notified 🔔`,'#16a34a');
+    pollBadge();
+  }
+
 }
 
 // ─── ROUTE PLANNER: ASSIGN ────────────────────

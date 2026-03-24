@@ -227,11 +227,35 @@ app.get('/api/deliveries', async (req, res) => {
 });
 
 // OPT consolidates ──► notify Route Planner + Warehouse
+// Priority rule:
+//   • Only 1 confirmed order  → process immediately ONLY if priority is 'urgent' or 'high'
+//                               if priority is 'normal' or 'low', hold and notify OPT to wait
+//   • 2+ confirmed orders     → process all regardless of priority (batch is ready)
 app.post('/api/deliveries/consolidate', async (req, res) => {
   try {
     const confirmed = await q(`SELECT * FROM dbo.Orders WHERE Status='confirmed'`);
-    if (!confirmed.length) return res.json({ created:0 });
+    if (!confirmed.length) return res.json({ created:0, held:0 });
 
+    // ── Single-order priority gate ───────────────────────
+    if (confirmed.length === 1) {
+      const solo = confirmed[0];
+      const isHighPriority = ['urgent','high'].includes((solo.Priority||'').toLowerCase());
+
+      if (!isHighPriority) {
+        // Hold — notify OPT to wait for more orders
+        await notifyRole('order_team','warning',
+          `⏳ Order ${solo.OrderID} held — waiting for batch`,
+          `Only 1 confirmed order exists (${solo.RetailerName}, ${solo.City} — priority: ${solo.Priority}). `+
+          `Low/normal priority single orders are held until more orders are confirmed. `+
+          `Consolidate again once additional orders are ready, or upgrade the priority to process immediately.`,
+          solo.OrderID
+        );
+        return res.json({ created:0, held:1, reason:'single_low_priority', orderId:solo.OrderID });
+      }
+      // Falls through to process below if high/urgent
+    }
+
+    // ── Process all eligible confirmed orders ─────────────
     let created = 0;
     const cities = [];
     for (const o of confirmed) {
@@ -247,21 +271,26 @@ app.post('/api/deliveries/consolidate', async (req, res) => {
       created++;
     }
 
+    const isSingleUrgent = confirmed.length === 1;
+    const batchNote = isSingleUrgent
+      ? `Single high-priority order fast-tracked.`
+      : `Batch of ${created} orders consolidated.`;
+
     // 🔔 Notify Route Planner — ready to plan
     await notifyRole('route_planner','info',
-      `📋 ${created} deliveries ready to plan`,
-      `OPT has consolidated ${created} confirmed orders into delivery records. Cities: ${cities.join(', ')}. Please assign drivers and vehicles now.`,
+      `📋 ${created} deliver${created===1?'y':'ies'} ready to plan`,
+      `${batchNote} Cities: ${cities.join(', ')}. Please assign drivers and vehicles now.`,
       null
     );
 
     // 🔔 Notify Warehouse — heads up, deliveries incoming
     await notifyRole('warehouse','info',
-      `📦 ${created} new deliveries incoming`,
-      `${created} orders have been consolidated into delivery records. Drivers and vehicles will be assigned shortly. Please prepare warehouse for cargo packing.`,
+      `📦 ${created} new deliver${created===1?'y':'ies'} incoming`,
+      `${batchNote} Drivers and vehicles will be assigned shortly. Please prepare warehouse for cargo packing.`,
       null
     );
 
-    res.json({ created });
+    res.json({ created, held:0 });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
 
