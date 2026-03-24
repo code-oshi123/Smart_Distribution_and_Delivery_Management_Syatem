@@ -6,12 +6,12 @@ const express = require('express');
 const sql     = require('mssql');
 const cors    = require('cors');
 const path    = require('path');
-
+ 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
-
+ 
 // ── DB config ─────────────────────────────────────────────
 const DB = {
   server:   'ISHEY-LAPTOP2', port: 1433, database: 'NestleSprint1',
@@ -34,7 +34,7 @@ async function ex(qry, params = {}) {
   for (const [k, v] of Object.entries(params)) r.input(k, v);
   return r.query(qry);
 }
-
+ 
 // ── Helpers ───────────────────────────────────────────────
 const REGIONS = {
   Colombo:'Western', Dehiwala:'Western', Nugegoda:'Western', Negombo:'Western',
@@ -53,11 +53,11 @@ async function nextId(table, col, prefix) {
   const rows = await q(`SELECT MAX(CAST(SUBSTRING(${col},${prefix.length+1},10) AS INT)) AS n FROM dbo.${table}`);
   return prefix + String((rows[0].n||0)+1).padStart(3,'0');
 }
-
+ 
 // ══════════════════════════════════════════════════════════
 // NOTIFICATION ENGINE
 // ══════════════════════════════════════════════════════════
-
+ 
 // Send to one specific user
 async function notifyUser(userId, type, title, message, refId) {
   await ex(
@@ -65,18 +65,18 @@ async function notifyUser(userId, type, title, message, refId) {
     { uid:+userId, t:type, ti:title, m:message, r:refId||null }
   );
 }
-
+ 
 // Send to ALL users of a role
 async function notifyRole(role, type, title, message, refId) {
   const users = await q(`SELECT UserID FROM dbo.Users WHERE Role=@r AND IsActive=1`,{ r:role });
   for (const u of users) await notifyUser(u.UserID, type, title, message, refId);
 }
-
+ 
 // Send to multiple roles
 async function notifyRoles(roles, type, title, message, refId) {
   for (const role of roles) await notifyRole(role, type, title, message, refId);
 }
-
+ 
 // ══════════════════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════════════════
@@ -91,7 +91,7 @@ app.post('/api/login', async (req, res) => {
     res.json(rows[0]);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // ══════════════════════════════════════════════════════════
 // NOTIFICATIONS API
 // ══════════════════════════════════════════════════════════
@@ -108,7 +108,7 @@ app.get('/api/notifications', async (req, res) => {
     res.json(rows);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.get('/api/notifications/unread', async (req, res) => {
   try {
     const rows = await q(
@@ -118,21 +118,21 @@ app.get('/api/notifications/unread', async (req, res) => {
     res.json({ count: rows[0].cnt });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.put('/api/notifications/:id/read', async (req, res) => {
   try {
     await ex(`UPDATE dbo.Notifications SET IsRead=1 WHERE NotifID=@id`,{ id:+req.params.id });
     res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.put('/api/notifications/read-all', async (req, res) => {
   try {
     await ex(`UPDATE dbo.Notifications SET IsRead=1 WHERE UserID=@uid`,{ uid:+req.body.userId });
     res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // ══════════════════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════════════════
@@ -152,7 +152,7 @@ app.get('/api/orders', async (req, res) => {
     res.json(rows);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // RETAILER submits order ──► notify ALL order_team
 app.post('/api/orders', async (req, res) => {
   try {
@@ -164,18 +164,18 @@ app.post('/api/orders', async (req, res) => {
       { id, rid:+retailerId, rn:retailerName, city, reg:region(city),
         items:+items, kg:+kg, prio:priority||'normal', notes:notes||'' }
     );
-
+ 
     // 🔔 Notify Order Processing Team
     await notifyRole('order_team','info',
       `New order request — ${id}`,
       `${retailerName} has requested ${items} items (${kg} kg) to ${city}. Priority: ${priority||'normal'}. Please review and confirm or reject.`,
       id
     );
-
+ 
     res.json({ id });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // OPT confirms or rejects ──► notify the retailer
 app.put('/api/orders/:id/confirm', async (req, res) => {
   try {
@@ -186,7 +186,7 @@ app.put('/api/orders/:id/confirm', async (req, res) => {
       `UPDATE dbo.Orders SET Status=@s,ConfirmedBy=@cb,RejectionReason=@rr,UpdatedAt=GETDATE() WHERE OrderID=@id`,
       { s:status, cb:+confirmedBy, rr:rejectReason||null, id:req.params.id }
     );
-
+ 
     // 🔔 Notify the Retailer
     if (action === 'confirm') {
       await notifyUser(order.RetailerID,'success',
@@ -201,11 +201,11 @@ app.put('/api/orders/:id/confirm', async (req, res) => {
         req.params.id
       );
     }
-
+ 
     res.json({ ok:true, status });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // ══════════════════════════════════════════════════════════
 // DELIVERIES
 // ══════════════════════════════════════════════════════════
@@ -225,7 +225,7 @@ app.get('/api/deliveries', async (req, res) => {
     res.json(rows);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // OPT consolidates ──► notify Route Planner + Warehouse
 // Priority rule:
 //   • Only 1 confirmed order  → process immediately ONLY if priority is 'urgent' or 'high'
@@ -235,12 +235,12 @@ app.post('/api/deliveries/consolidate', async (req, res) => {
   try {
     const confirmed = await q(`SELECT * FROM dbo.Orders WHERE Status='confirmed'`);
     if (!confirmed.length) return res.json({ created:0, held:0 });
-
+ 
     // ── Single-order priority gate ───────────────────────
     if (confirmed.length === 1) {
       const solo = confirmed[0];
       const isHighPriority = ['urgent','high'].includes((solo.Priority||'').toLowerCase());
-
+ 
       if (!isHighPriority) {
         // Hold — notify OPT to wait for more orders
         await notifyRole('order_team','warning',
@@ -254,7 +254,7 @@ app.post('/api/deliveries/consolidate', async (req, res) => {
       }
       // Falls through to process below if high/urgent
     }
-
+ 
     // ── Process all eligible confirmed orders ─────────────
     let created = 0;
     const cities = [];
@@ -270,30 +270,30 @@ app.post('/api/deliveries/consolidate', async (req, res) => {
       cities.push(o.City);
       created++;
     }
-
+ 
     const isSingleUrgent = confirmed.length === 1;
     const batchNote = isSingleUrgent
       ? `Single high-priority order fast-tracked.`
       : `Batch of ${created} orders consolidated.`;
-
+ 
     // 🔔 Notify Route Planner — ready to plan
     await notifyRole('route_planner','info',
       `📋 ${created} deliver${created===1?'y':'ies'} ready to plan`,
       `${batchNote} Cities: ${cities.join(', ')}. Please assign drivers and vehicles now.`,
       null
     );
-
+ 
     // 🔔 Notify Warehouse — heads up, deliveries incoming
     await notifyRole('warehouse','info',
       `📦 ${created} new deliver${created===1?'y':'ies'} incoming`,
       `${batchNote} Drivers and vehicles will be assigned shortly. Please prepare warehouse for cargo packing.`,
       null
     );
-
+ 
     res.json({ created, held:0 });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // Route Planner assigns driver + vehicle ──► notify Driver + Warehouse
 app.put('/api/deliveries/:id/assign', async (req, res) => {
   try {
@@ -303,31 +303,31 @@ app.put('/api/deliveries/:id/assign', async (req, res) => {
       { id:req.params.id }
     ))[0];
     const etaVal = del ? calcEta(del.City) : '—';
-
+ 
     await ex(
       `UPDATE dbo.Deliveries SET DriverID=@did,VehicleID=@vid,Status='assigned',ETA=@eta,UpdatedAt=GETDATE() WHERE DeliveryID=@id`,
       { did:+driverId, vid:vehicleId, eta:etaVal, id:req.params.id }
     );
     await ex(`UPDATE dbo.Vehicles SET Status='assigned' WHERE VehicleID=@vid`,{ vid:vehicleId });
-
+ 
     // 🔔 Notify the assigned Driver
     await notifyUser(+driverId,'info',
       `🚚 New delivery assigned — ${req.params.id}`,
       `You have been assigned delivery ${req.params.id}. Destination: ${del.RetailerName}, ${del.City}. ${del.ItemCount} items · ${del.WeightKG} kg. Vehicle: ${vehicleId}. ETA: ${etaVal}. Wait for warehouse to prepare and load the cargo.`,
       req.params.id
     );
-
+ 
     // 🔔 Notify Warehouse — full delivery details, prepare cargo
     await notifyRole('warehouse','info',
       `📦 Prepare cargo — Delivery ${req.params.id}`,
       `Delivery ${req.params.id} assigned to ${driverName} (${vehicleId}). Destination: ${del.RetailerName}, ${del.City}. ${del.ItemCount} items · ${del.WeightKG} kg. Please pick, pack and load vehicle now.`,
       req.params.id
     );
-
+ 
     res.json({ ok:true, eta:etaVal });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // Warehouse marks cargo ready ──► notify Driver to come pick up
 app.put('/api/deliveries/:id/warehouse-ready', async (req, res) => {
   try {
@@ -336,7 +336,7 @@ app.put('/api/deliveries/:id/warehouse-ready', async (req, res) => {
       { id:req.params.id }
     ))[0];
     await ex(`UPDATE dbo.Deliveries SET Status='warehouse_ready',UpdatedAt=GETDATE() WHERE DeliveryID=@id`,{ id:req.params.id });
-
+ 
     // 🔔 Notify the Driver — cargo packed, come pick up
     if (del?.DriverID) {
       await notifyUser(del.DriverID,'success',
@@ -348,7 +348,7 @@ app.put('/api/deliveries/:id/warehouse-ready', async (req, res) => {
     res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // Warehouse marks vehicle loaded ──► notify Driver to confirm pickup in app
 app.put('/api/deliveries/:id/loaded', async (req, res) => {
   try {
@@ -357,7 +357,7 @@ app.put('/api/deliveries/:id/loaded', async (req, res) => {
       { id:req.params.id }
     ))[0];
     await ex(`UPDATE dbo.Deliveries SET Status='loaded',UpdatedAt=GETDATE() WHERE DeliveryID=@id`,{ id:req.params.id });
-
+ 
     // 🔔 Notify Driver — vehicle fully loaded, confirm pickup
     if (del?.DriverID) {
       await notifyUser(del.DriverID,'alert',
@@ -369,7 +369,7 @@ app.put('/api/deliveries/:id/loaded', async (req, res) => {
     res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // Distributor updates status ──► notify based on new status
 // in-transit → Retailer + OPT + Warehouse
 // delivered  → Retailer + OPT + Warehouse
@@ -386,13 +386,13 @@ app.put('/api/deliveries/:id/status', async (req, res) => {
     );
     const del = delRows[0];
     const oldStatus = del?.Status || 'unknown';
-
+ 
     await ex(`UPDATE dbo.Deliveries SET Status=@s,UpdatedAt=GETDATE() WHERE DeliveryID=@id`,{ s:newStatus, id:req.params.id });
     await ex(
       `INSERT INTO dbo.DeliveryStatus(DeliveryID,UpdatedByID,OldStatus,NewStatus,Note) VALUES(@did,@uid,@os,@ns,@n)`,
       { did:req.params.id, uid:+updatedBy, os:oldStatus, ns:newStatus, n:note||null }
     );
-
+ 
     // ── IN-TRANSIT: notify Retailer, OPT, Warehouse ──────
     if (newStatus === 'in-transit') {
       if (del?.RetailerID) {
@@ -408,7 +408,7 @@ app.put('/api/deliveries/:id/status', async (req, res) => {
         req.params.id
       );
     }
-
+ 
     // ── DELIVERED: notify Retailer, OPT, Warehouse ───────
     if (newStatus === 'delivered') {
       await ex(`UPDATE dbo.Vehicles SET Status='idle' WHERE VehicleID=(SELECT VehicleID FROM dbo.Deliveries WHERE DeliveryID=@id)`,{ id:req.params.id });
@@ -425,28 +425,28 @@ app.put('/api/deliveries/:id/status', async (req, res) => {
         req.params.id
       );
     }
-
+ 
     // ── FAILED: notify Retailer, OPT, Warehouse ──────────
     if (newStatus === 'failed') {
       await ex(`UPDATE dbo.Vehicles SET Status='idle' WHERE VehicleID=(SELECT VehicleID FROM dbo.Deliveries WHERE DeliveryID=@id)`,{ id:req.params.id });
       if (del?.RetailerID) {
         await notifyUser(del.RetailerID,'alert',
-          `❌ Delivery ${req.params.id} failed`,
+          ` Delivery ${req.params.id} failed`,
           `Your delivery to ${del.City} could not be completed. Reason: ${note||'Not specified'}. Please contact the Order Processing Team to reschedule.`,
           req.params.id
         );
       }
       await notifyRoles(['order_team','warehouse'],'alert',
-        `❌ Delivery ${req.params.id} failed`,
+        ` Delivery ${req.params.id} failed`,
         `${del.RetailerName}, ${del.City} — delivery failed. Reason: ${note||'Not specified'}. Immediate action required.`,
         req.params.id
       );
     }
-
+ 
     res.json({ ok:true });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // ══════════════════════════════════════════════════════════
 // ROUTES
 // ══════════════════════════════════════════════════════════
@@ -462,7 +462,7 @@ app.get('/api/routes', async (req, res) => {
     res.json(rows);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.post('/api/routes', async (req, res) => {
   try {
     const { driverId, driverName, vehicleId, stops, distKm, durMins, cities } = req.body;
@@ -476,7 +476,7 @@ app.post('/api/routes', async (req, res) => {
     res.json({ id });
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 // ══════════════════════════════════════════════════════════
 // REFERENCE DATA
 // ══════════════════════════════════════════════════════════
@@ -485,13 +485,13 @@ app.get('/api/drivers', async (req, res) => {
     res.json(await q(`SELECT UserID AS id,FullName AS name,Avatar AS avatar FROM dbo.Users WHERE Role='distributor' AND IsActive=1`));
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.get('/api/vehicles', async (req, res) => {
   try {
     res.json(await q(`SELECT VehicleID AS id,Plate AS plate,VehicleType AS type,Capacity AS cap,FuelPercent AS fuel,Status AS status FROM dbo.Vehicles`));
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.get('/api/status-log/:deliveryId', async (req, res) => {
   try {
     const rows = await q(`
@@ -502,7 +502,7 @@ app.get('/api/status-log/:deliveryId', async (req, res) => {
     res.json(rows);
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
-
+ 
 app.listen(5001, () => {
   console.log('\n🟢 Nestlé DMS v3 + Notifications → http://localhost:5001');
   console.log('   Open http://localhost:5001/demo.html\n');
