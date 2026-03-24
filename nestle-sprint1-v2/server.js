@@ -13,6 +13,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ── DB config ─────────────────────────────────────────────
+// const DB = {
+//   server:   'ISHEY-LAPTOP2', port: 1433, database: 'NestleSprint1',
+//   user: 'sa', password: 'Nestle123!',
+//   options: { encrypt: false, trustServerCertificate: true, enableArithAbort: true },
+//   pool:    { max: 10, min: 0, idleTimeoutMillis: 30000 },
+// };
 const DB = {
   server: 'nestleappgroup.database.windows.net', // 
   port: 1433,
