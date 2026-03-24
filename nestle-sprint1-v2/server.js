@@ -1,6 +1,5 @@
 // ══════════════════════════════════════════════════════════
 // NESTLÉ DMS — Sprint 1 v3  (Full Notification System)
-// npm install && node server.js  →  http://localhost:5001
 // ══════════════════════════════════════════════════════════
 const express = require('express');
 const sql     = require('mssql');
@@ -8,7 +7,9 @@ const cors    = require('cors');
 const path    = require('path');
  
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://smart-distribution-and-delivery-man.vercel.app/'
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
  
@@ -503,7 +504,7 @@ app.get('/api/status-log/:deliveryId', async (req, res) => {
   } catch(e) { res.status(500).json({ error:e.message }); }
 });
  
-app.listen(5001, () => {
-  console.log('\n🟢 Nestlé DMS v3 + Notifications → http://localhost:5001');
-  console.log('   Open http://localhost:5001/demo.html\n');
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
